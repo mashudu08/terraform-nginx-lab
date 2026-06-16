@@ -1,0 +1,73 @@
+name: 'Terraform CI/CD'
+
+on: 
+  push: 
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'Terraform Plan & Apply'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v4
+
+    - name: 'Setup terraform'
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+    
+    - name: 'Setup Docker'
+      run: |
+        docker --version
+        docker pull nginx:latest
+    
+    - name: 'Terraform Init'
+      run: terraform init
+    
+    - name: 'Terraform Format'
+      run: terraform fmt -check
+    
+    - name: 'Terraform Validate'
+      run: terraform validate
+    
+    - name: 'Terraform Plan'
+      id: plan
+      run: |
+        terraform plan -out=tfplan
+        echo "plan_output<<EOF" >> $GITHUB_OUTPUT
+        terraform show tfplan >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: 'Comment Plan'
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `#### Terraform Plan 📝
+          \`\`\`
+          ${{ steps.plan.outputs.plan_output }}
+          \`\`\`
+          `;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          });
+    
+    - name: 'Terraform Apply'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve tfplan
+
+    - name: "Show Outputs"
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+          echo "Server Name: $(terraform output -raw server_name)"
+          echo "Nginx URL: $(terraform output -raw nginx_url)
+      
