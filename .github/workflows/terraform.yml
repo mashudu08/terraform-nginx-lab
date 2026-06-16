@@ -1,5 +1,8 @@
 name: 'Terraform CI/CD'
 
+env:
+  TF_PROVIDER_DISABLE_SIGNATURE_VERIFICATION: true
+  
 on: 
   push: 
     branches:
