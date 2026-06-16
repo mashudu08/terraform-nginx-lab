@@ -17,10 +17,13 @@ jobs:
     - name: 'Checkout'
       uses: actions/checkout@v4
 
-    - name: 'Setup terraform'
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.0
+    - name: 'Install terraform cli' 
+      run: |
+        echo "Installing Terraform 1.6.0..."
+        wget -q -O terraform.zip https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
+        sudo unzip -o terraform.zip -d /usr/local/bin/
+        rm terraform.zip
+        terraform --version
     
     - name: 'Setup Docker'
       run: |
@@ -28,11 +31,7 @@ jobs:
         docker pull nginx:latest
     
     - name: 'Terraform Init'
-      run: |
-        mkdir -p /tmp/terraform-plugins
-        terraform init -plugin-dir=/tmp/terraform-plugins
-      env:
-        TF_CLI_ARGS_init: "-plugin-dir=/tmp/terraform-plugins"
+      run: terraform init
     
     - name: 'Terraform Format'
       run: terraform fmt -check || true
