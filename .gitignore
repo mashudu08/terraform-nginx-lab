@@ -1,0 +1,13 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+
+# Local files
+inventory.json
+nginx-logs.txt

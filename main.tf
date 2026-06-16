@@ -55,12 +55,12 @@ data "docker_image" "nginx" {
 
 # Run Nginx container
 resource "docker_container" "web_server" {
-  name  = "terraform-nginx-${random_pet.server_name.id}"
+  name  = var.container_name
   image = data.docker_image.nginx.name
 
   ports {
     internal = 80
-    external = 8081
+    external = var.external_port
   }
 
   # Health check
@@ -95,7 +95,7 @@ resource "null_resource" "test_nginx" {
       echo "Testing Nginx container..."
       sleep 2
       curl -s http://localhost:8081 | head -n 5
-      echo "Container is running! ✓"
+      echo "Container is running!"
     EOT
   }
 
@@ -110,7 +110,7 @@ resource "null_resource" "capture_logs" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      docker logs $(docker ps -q --filter "name=terraform-nginx-*") > nginx-logs.txt
+      docker logs $(docker ps -q --filter "name=${var.container_name}") > nginx-logs.txt
       echo "Logs captured at $(date)" >> nginx-logs.txt
     EOT
   }
@@ -121,10 +121,14 @@ resource "null_resource" "capture_logs" {
   }
 }
 
+output "container_name" {
+  value = docker_container.web_server.name
+}
+
 output "container_id" {
   value = docker_container.web_server.id
 }
 
 output "nginx_url" {
-  value = "http://localhost:8081"
+  value = "http://localhost:${var.external_port}    "
 }
