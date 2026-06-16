@@ -17,13 +17,10 @@ jobs:
     - name: 'Checkout'
       uses: actions/checkout@v4
 
-    - name: 'Install terraform cli' 
-      run: |
-        echo "Installing Terraform 1.6.0..."
-        wget -q -O terraform.zip https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
-        sudo unzip -o terraform.zip -d /usr/local/bin/
-        rm terraform.zip
-        terraform --version
+    - name: 'Setup Terraform'
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.9.8
     
     - name: 'Setup Docker'
       run: |
@@ -72,5 +69,5 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
           echo "Server Name: $(terraform output -raw server_name)"
-          echo "Nginx URL: $(terraform output -raw nginx_url)
+          echo "Nginx URL: $(terraform output -raw nginx_url)"
       
