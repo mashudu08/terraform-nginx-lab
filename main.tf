@@ -94,7 +94,7 @@ resource "null_resource" "test_nginx" {
     command = <<-EOT
       echo "Testing Nginx container..."
       sleep 2
-      curl -s http://localhost:8080 | head -n 5
+      curl -s http://localhost:8081 | head -n 5
       echo "Container is running! ✓"
     EOT
   }
@@ -126,5 +126,5 @@ output "container_id" {
 }
 
 output "nginx_url" {
-  value = "http://localhost:8080"
+  value = "http://localhost:8081"
 }
